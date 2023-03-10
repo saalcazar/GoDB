@@ -84,3 +84,13 @@ storageProduct := storage.NewPsqlProduct(storage.Pool())
 		log.Fatalf("product.Update: %v", err)
 	}
 ```
+
+## Elimina un producto
+```go
+storageProduct := storage.NewPsqlProduct(storage.Pool())
+	serviceProduct := product.NewService(storageProduct)
+	err := serviceProduct.Delete(3)
+	if err != nil {
+		log.Fatalf("product.Update: %v", err)
+	}
+```
