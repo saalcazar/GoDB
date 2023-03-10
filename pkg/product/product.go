@@ -2,6 +2,7 @@ package product
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -15,7 +16,7 @@ type Model struct {
 	UpdatedAt   time.Time
 }
 
-// Implementa la interface Stringer del paquete format - alpimprimir la información esta este tabulada y visualmente legible
+// Implementa la interface Stringer del paquete format - al imprimir la información esta este tabulada y visualmente legible
 func (m *Model) String() string {
 	return fmt.Sprintf(
 		"%02d | %-20s | %-20s | %5d | %10s | %10s",
@@ -26,12 +27,21 @@ func (m *Model) String() string {
 // Slice de Modelo
 type Models []*Model
 
+func (m Models) String() string {
+	builder := strings.Builder{}
+	builder.WriteString(fmt.Sprintf("%02s | %-20s | %-60s | %5s | %10s | %10s\n", "id", "name", "observations", "price", "created_at", "updated_at"))
+	for _, model := range m {
+		builder.WriteString(model.String() + "\n")
+	}
+	return builder.String()
+}
+
 type Storage interface {
 	Migrate() error
 	Create(*Model) error
 	// Update(*Model) error
-	// GetAll(Models, error)
-	// GetByID(uint) (*Model, error)
+	GetAll() (Models, error)
+	GetByID(uint) (*Model, error)
 	// Delete(uint) error
 }
 
@@ -54,4 +64,13 @@ func (s *Service) Migrate() error {
 func (s *Service) Create(m *Model) error {
 	m.CreatedAt = time.Now()
 	return s.storage.Create(m)
+}
+
+// GetAll se usa para leer todos los datos de una tabla
+func (s *Service) GetAll() (Models, error) {
+	return s.storage.GetAll()
+}
+
+func (s *Service) GetById(id uint) (*Model, error) {
+	return s.storage.GetByID(id)
 }
