@@ -52,3 +52,35 @@ storageProduct := storage.NewPsqlProduct(storage.Pool())
 
 	fmt.Println(ms)
 ```
+
+## Revisa los datos de una sola fila
+```go
+storageProduct := storage.NewPsqlProduct(storage.Pool())
+	serviceProduct := product.NewService(storageProduct)
+
+	m, err := serviceProduct.GetById(17)
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		fmt.Println("No existe un producto con ese ID")
+	case err != nil:
+		log.Fatalf("product.GetByID: %v", err)
+	default:
+		fmt.Println(m)
+	}
+```
+
+## Actualiza un producto
+```go
+storageProduct := storage.NewPsqlProduct(storage.Pool())
+	serviceProduct := product.NewService(storageProduct)
+
+	m := &product.Model{
+		ID:    50,
+		Name:  "Curso de Go con DB",
+		Price: 50,
+	}
+	err := serviceProduct.Update(m)
+	if err != nil {
+		log.Fatalf("product.Update: %v", err)
+	}
+```

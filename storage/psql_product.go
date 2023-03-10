@@ -27,6 +27,10 @@ const (
 	psqlGetAllProduct = `SELECT id, name, observation, price, created_at, updated_at FROM products`
 
 	psqlGetProductById = psqlGetAllProduct + " WHERE id = $1"
+
+	psqlUpdateProduct = `UPDATE products SET name = $1, observation = $2, price = $3, updated_at = $4 WHERE id = $5`
+
+	psqlDeleteProduct = `DELETE FROM products WHERE id = $1`
 )
 
 // usado para trabajar con postgrs y el paquete
@@ -114,6 +118,55 @@ func (p *PsqlProduct) GetByID(id uint) (*product.Model, error) {
 	}
 	defer stmt.Close()
 	return scanRowProduct(stmt.QueryRow(id))
+}
+
+// Implementa la interface
+func (p *PsqlProduct) Update(m *product.Model) error {
+	stmt, err := p.db.Prepare(psqlUpdateProduct)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(
+		&m.Name,
+		stringToNull(m.Observation),
+		&m.Price,
+		timeToNull(m.UpdatedAt),
+		&m.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	rowsAfected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAfected == 0 {
+		return fmt.Errorf("no existe el producto con id: %d", m.ID)
+	}
+
+	fmt.Println("Se actualizo el producto correctamente")
+	return nil
+
+}
+
+func (p *PsqlProduct) Delete(id uint) error {
+	stmt, err := p.db.Prepare(psqlDeleteProduct)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Se elimino el producto correctamente")
+	return nil
 }
 
 func scanRowProduct(s scanner) (*product.Model, error) {
